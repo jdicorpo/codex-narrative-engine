@@ -5,6 +5,6 @@
   "minAppVersion": "1.5.0",
   "description": "Narrative intelligence for TTRPG world-building — entity indexing, consistency linting, and dead-link detection for your campaign vault.",
   "author": "Codex IDE",
-  "authorUrl": "https://github.com/jdicorpo/codex-narrative-engine",
+  "authorUrl": "https://github.com/jdicorpo",
   "isDesktopOnly": true
 }
