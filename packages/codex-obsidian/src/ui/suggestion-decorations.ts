@@ -10,6 +10,11 @@ import { computeLineDiff } from '@codex-ide/core';
 import type { DiffLine } from '@codex-ide/core';
 import type CodexPlugin from '../main';
 
+interface ObsidianEditorInternal {
+  editor?: { cm?: EditorView };
+  file?: TFile;
+}
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -228,7 +233,7 @@ export function createSuggestionDecorations(_plugin: CodexPlugin) {
 function findEditorViewsWithSuggestions(plugin: CodexPlugin): EditorView[] {
   const views: EditorView[] = [];
   plugin.app.workspace.getLeavesOfType('markdown').forEach((leaf) => {
-    const cm = (leaf.view as any)?.editor?.cm as EditorView | undefined;
+    const cm = (leaf.view as unknown as ObsidianEditorInternal)?.editor?.cm;
     if (cm && cm.state.field(suggestionField, false)) {
       views.push(cm);
     }
@@ -311,7 +316,7 @@ export function acceptAllSuggestions(plugin: CodexPlugin): void {
   new Notice('Codex: Suggestions accepted.');
 }
 
-export async function rejectAllSuggestions(plugin: CodexPlugin): Promise<void> {
+export function rejectAllSuggestions(plugin: CodexPlugin): void {
   for (const view of findEditorViewsWithSuggestions(plugin)) {
     const state = view.state.field(suggestionField, false);
     if (!state) continue;
@@ -359,9 +364,10 @@ export async function applySuggestedEdit(
 
   let applied = false;
   plugin.app.workspace.getLeavesOfType('markdown').forEach((leaf) => {
-    const leafFile = (leaf.view as any)?.file as TFile | undefined;
+    const internal = leaf.view as unknown as ObsidianEditorInternal;
+    const leafFile = internal?.file;
     if (leafFile?.path !== file.path) return;
-    const cm = (leaf.view as any)?.editor?.cm as EditorView | undefined;
+    const cm = internal?.editor?.cm;
     if (!cm) return;
 
     cm.dispatch({

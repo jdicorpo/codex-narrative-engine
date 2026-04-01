@@ -6,6 +6,7 @@
     "packages/codex-obsidian"
   ],
   "scripts": {
+    "prepare": "npm run build:core",
     "build": "npm run build:core && npm run build:obsidian",
     "build:core": "cd packages/codex-core && npm run build",
     "build:obsidian": "cd packages/codex-obsidian && npm run build",

@@ -84,6 +84,8 @@
 
 /* Global hover tooltip (DOM-based, works in all modes) */
 .codex-global-hover-tooltip {
+  position: fixed;
+  z-index: 1000;
   pointer-events: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   border-radius: 6px;
@@ -244,6 +246,31 @@
   color: var(--text-faint);
   font-size: var(--font-smallest);
   margin-left: 8px;
+}
+
+/* ===== Entity Types Settings ===== */
+
+.codex-entity-types-desc {
+  margin-bottom: 8px;
+}
+
+.codex-entity-type-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.codex-entity-type-row .codex-entity-type-label {
+  flex: 1;
+}
+
+.codex-entity-type-row .codex-entity-type-badge-builtin {
+  font-size: var(--font-smallest);
+}
+
+.codex-entity-type-row .codex-entity-type-remove {
+  cursor: pointer;
 }
 
 /* ===== Lore Chat Sidebar ===== */
@@ -556,6 +583,12 @@
 @keyframes codex-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* ===== Statblock Width Override ===== */
+
+.statblock .statblock-content > .column {
+  width: var(--codex-statblock-width, 600px) !important;
 }
 
 /* ===== Inline Suggestion Highlights ===== */

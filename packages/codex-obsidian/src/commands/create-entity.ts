@@ -1,4 +1,4 @@
-import { App, Modal, Setting, TFile, TFolder } from 'obsidian';
+import { Modal, Setting, TFile } from 'obsidian';
 import type CodexPlugin from '../main';
 
 const ENTITY_TEMPLATES: Record<string, (name: string) => string> = {

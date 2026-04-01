@@ -1,4 +1,4 @@
-import type { Diagnostic, LinkReference } from '../types';
+import type { Diagnostic } from '../types';
 import type { LinkResolver } from '../resolver/link-resolver';
 import type { EntityRegistry } from '../indexer/entity-registry';
 

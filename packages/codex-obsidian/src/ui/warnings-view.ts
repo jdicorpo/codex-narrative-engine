@@ -1,4 +1,5 @@
-import { ItemView, WorkspaceLeaf } from 'obsidian';
+import { ItemView, TFile, WorkspaceLeaf } from 'obsidian';
+import type { Editor } from 'obsidian';
 import type CodexPlugin from '../main';
 import type { Diagnostic } from '@codex-ide/core';
 
@@ -24,11 +25,11 @@ export class WarningsView extends ItemView {
     return 'scroll-text';
   }
 
-  async onOpen(): Promise<void> {
+  onOpen(): void {
     this.refresh();
   }
 
-  async onClose(): Promise<void> {
+  onClose(): void {
     this.contentEl.empty();
   }
 
@@ -94,14 +95,14 @@ export class WarningsView extends ItemView {
   }
 
   private async navigateTo(diag: Diagnostic): Promise<void> {
-    const file = this.app.vault.getAbstractFileByPath(diag.filePath);
-    if (!file) return;
+    const abstractFile = this.app.vault.getAbstractFileByPath(diag.filePath);
+    if (!(abstractFile instanceof TFile)) return;
 
     const leaf = this.app.workspace.getLeaf(false);
-    await leaf.openFile(file as any);
+    await leaf.openFile(abstractFile);
 
-    const view = leaf.view as any;
-    if (view?.editor) {
+    const view = leaf.view as ItemView & { editor?: Editor };
+    if (view.editor) {
       const pos = { line: diag.line - 1, ch: diag.column };
       view.editor.setCursor(pos);
       view.editor.scrollIntoView({ from: pos, to: pos }, true);

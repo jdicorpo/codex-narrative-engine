@@ -1,4 +1,4 @@
-import { Notice, TFile, Modal, App, Setting } from 'obsidian';
+import { Notice, TFile, Modal, Setting } from 'obsidian';
 import { buildSystemPrompt } from '@codex-ide/core';
 import type { EntityType } from '@codex-ide/core';
 import type CodexPlugin from '../main';
@@ -392,9 +392,9 @@ ${this.selectedText}`,
       const content = await this.plugin.app.vault.read(this.file);
       const newContent = content.slice(0, this.selFrom) + revised + content.slice(this.selTo);
       await applySuggestedEdit(this.plugin, this.file, newContent, 'Revise Selection');
-    } catch (err: any) {
+    } catch (err: unknown) {
       hideSpinner();
-      new Notice(`Codex: Error — ${err?.message ?? 'unknown'}`);
+      new Notice(`Codex: Error — ${err instanceof Error ? err.message : 'unknown'}`);
     }
   }
 }
@@ -655,9 +655,9 @@ Return ONLY the complete markdown file content with frontmatter — no explanati
       await leaf.openFile(newFile);
       hideSpinner();
       new Notice(`Codex: Created ${safeName}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       hideSpinner();
-      new Notice(`Codex: Error — ${err?.message ?? 'unknown'}`);
+      new Notice(`Codex: Error — ${err instanceof Error ? err.message : 'unknown'}`);
     }
   }
 }
@@ -697,9 +697,9 @@ export async function describeScene(plugin: CodexPlugin, file: TFile): Promise<v
 
     const updatedContent = content + blockQuote;
     await applySuggestedEdit(plugin, file, updatedContent, 'Describe Scene');
-  } catch (err: any) {
+  } catch (err: unknown) {
     hideSpinner();
-    new Notice(`Codex: Error — ${err?.message ?? 'unknown'}`);
+    new Notice(`Codex: Error — ${err instanceof Error ? err.message : 'unknown'}`);
   }
 }
 
@@ -778,9 +778,9 @@ ${content}`,
     }
 
     new ExtractedEntitiesModal(plugin, file, entities).open();
-  } catch (err: any) {
+  } catch (err: unknown) {
     hideSpinner();
-    new Notice(`Codex: Error — ${err?.message ?? 'unknown'}`);
+    new Notice(`Codex: Error — ${err instanceof Error ? err.message : 'unknown'}`);
   }
 }
 
@@ -1008,7 +1008,7 @@ function parseEntityJSON(raw: string): ExtractedEntity[] {
 
   try {
     const parsed = JSON.parse(fixable);
-    console.log(`Codex: Salvaged ${parsed.length} entities from truncated response`);
+    console.debug(`Codex: Salvaged ${parsed.length} entities from truncated response`);
     return parsed;
   } catch {
     throw new Error('Could not parse entity JSON');

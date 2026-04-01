@@ -1,4 +1,4 @@
-import { App, Notice, PluginSettingTab, Setting } from 'obsidian';
+import { App, ItemView, Notice, PluginSettingTab, Setting } from 'obsidian';
 import type { ProviderType, ProviderConfig, StatblockFormat } from '@codex-ide/core';
 import { DEFAULT_ENTITY_TYPES, PROVIDER_DEFAULTS, PROVIDER_LABELS, PROVIDER_MODELS } from '@codex-ide/core';
 import type CodexPlugin from './main';
@@ -31,7 +31,7 @@ export const DEFAULT_SETTINGS: CodexSettings = {
   enableDeadLinkWarnings: true,
   enableStateConflictWarnings: true,
   showGutterIcons: true,
-  ignoredFolders: '.obsidian, .trash',
+  ignoredFolders: '.trash',
 
   aiProvider: 'gemini',
   aiApiKey: '',
@@ -64,7 +64,7 @@ export class CodexSettingTab extends PluginSettingTab {
     containerEl.empty();
 
     // ----- Linting Settings -----
-    containerEl.createEl('h2', { text: 'Narrative Linting' });
+    new Setting(containerEl).setName('Narrative Linting').setHeading();
 
     new Setting(containerEl)
       .setName('Dead-link warnings')
@@ -107,7 +107,7 @@ export class CodexSettingTab extends PluginSettingTab {
       .setDesc('Comma-separated list of folders to exclude from indexing.')
       .addText(text =>
         text
-          .setPlaceholder('.obsidian, .trash')
+          .setPlaceholder('.trash')
           .setValue(this.plugin.settings.ignoredFolders)
           .onChange(async (value) => {
             this.plugin.settings.ignoredFolders = value;
@@ -116,7 +116,7 @@ export class CodexSettingTab extends PluginSettingTab {
       );
 
     // ----- AI Provider Settings -----
-    containerEl.createEl('h2', { text: 'AI Provider' });
+    new Setting(containerEl).setName('AI Provider').setHeading();
 
     new Setting(containerEl)
       .setName('Provider')
@@ -227,8 +227,8 @@ export class CodexSettingTab extends PluginSettingTab {
               } else {
                 new Notice(`✗ ${result.message}`);
               }
-            } catch (err: any) {
-              new Notice(`✗ ${err?.message ?? 'Unknown error'}`);
+            } catch (err: unknown) {
+              new Notice(`✗ ${err instanceof Error ? err.message : 'Unknown error'}`);
             } finally {
               button.setButtonText('Test');
               button.setDisabled(false);
@@ -237,7 +237,7 @@ export class CodexSettingTab extends PluginSettingTab {
       );
 
     // ----- AI Context Settings -----
-    containerEl.createEl('h2', { text: 'AI Context' });
+    new Setting(containerEl).setName('AI Context').setHeading();
 
     new Setting(containerEl)
       .setName('Recent sessions to include')
@@ -293,7 +293,7 @@ export class CodexSettingTab extends PluginSettingTab {
       );
 
     // ----- AI Generation Settings -----
-    containerEl.createEl('h2', { text: 'AI Generation' });
+    new Setting(containerEl).setName('AI Generation').setHeading();
 
     new Setting(containerEl)
       .setName('Rule system')
@@ -368,35 +368,27 @@ export class CodexSettingTab extends PluginSettingTab {
       );
 
     // ----- Entity Types -----
-    containerEl.createEl('h2', { text: 'Entity Types' });
+    new Setting(containerEl).setName('Entity Types').setHeading();
 
-    const typesDesc = containerEl.createEl('p', {
+    containerEl.createEl('p', {
       text: 'Entity types that Codex indexes and offers in generation dialogs. Add custom types or remove built-in ones you don\'t use.',
-      cls: 'setting-item-description',
+      cls: 'setting-item-description codex-entity-types-desc',
     });
-    typesDesc.style.marginBottom = '8px';
 
     const typesContainer = containerEl.createDiv({ cls: 'codex-entity-types-list' });
     const renderTypes = () => {
       typesContainer.empty();
       for (const t of this.plugin.settings.entityTypes) {
         const row = typesContainer.createDiv({ cls: 'codex-entity-type-row' });
-        row.style.display = 'flex';
-        row.style.alignItems = 'center';
-        row.style.gap = '8px';
-        row.style.marginBottom = '4px';
 
-        const label = row.createSpan({ text: t });
-        label.style.flex = '1';
+        row.createSpan({ text: t, cls: 'codex-entity-type-label' });
 
         const isDefault = (DEFAULT_ENTITY_TYPES as readonly string[]).includes(t);
         if (isDefault) {
-          const badge = row.createSpan({ text: 'built-in', cls: 'setting-item-description' });
-          badge.style.fontSize = 'var(--font-smallest)';
+          row.createSpan({ text: 'built-in', cls: 'setting-item-description codex-entity-type-badge-builtin' });
         }
 
-        const removeBtn = row.createEl('button', { text: '×' });
-        removeBtn.style.cursor = 'pointer';
+        const removeBtn = row.createEl('button', { text: '×', cls: 'codex-entity-type-remove' });
         removeBtn.addEventListener('click', async () => {
           this.plugin.settings.entityTypes = this.plugin.settings.entityTypes.filter(x => x !== t);
           await this.plugin.saveSettings();
@@ -451,7 +443,7 @@ export class CodexSettingTab extends PluginSettingTab {
       );
 
     // ----- Entity Templates -----
-    containerEl.createEl('h2', { text: 'Entity Templates' });
+    new Setting(containerEl).setName('Entity Templates').setHeading();
 
     new Setting(containerEl)
       .setName('Template folder')
@@ -480,7 +472,8 @@ export class CodexSettingTab extends PluginSettingTab {
               const fileExplorer = this.app.workspace.getLeavesOfType('file-explorer')[0];
               if (fileExplorer) {
                 this.app.workspace.revealLeaf(fileExplorer);
-                (fileExplorer.view as any)?.revealInFolder?.(abstractFile);
+                const view = fileExplorer.view as ItemView & { revealInFolder?: (file: unknown) => void };
+                view.revealInFolder?.(abstractFile);
               }
             }
           }),
@@ -499,7 +492,7 @@ export class CodexSettingTab extends PluginSettingTab {
       );
 
     // ----- Maintenance -----
-    containerEl.createEl('h2', { text: 'Maintenance' });
+    new Setting(containerEl).setName('Maintenance').setHeading();
 
     new Setting(containerEl)
       .setName('Re-index vault')

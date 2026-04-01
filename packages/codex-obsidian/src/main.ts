@@ -5,7 +5,6 @@ import { VaultAdapter } from './adapters/vault-adapter';
 import { WarningsView, WARNINGS_VIEW_TYPE } from './ui/warnings-view';
 import { LoreChatView, CHAT_VIEW_TYPE } from './ui/chat-view';
 import { createDiagnosticViewPlugin, createGutterViewPlugin, refreshDiagnostics } from './ui/diagnostic-decorations';
-import { createHoverTooltip } from './ui/hover-tooltip';
 import { createLinkStylingPlugin } from './ui/link-styling';
 import { createDeadLinkPostProcessor } from './ui/reading-mode-decorations';
 import { installGlobalHover } from './ui/global-hover';
@@ -24,6 +23,16 @@ import {
 } from './commands/ai-commands';
 import { CodexSettingTab, CodexSettings, DEFAULT_SETTINGS, getProviderConfig } from './settings';
 import { createProvider } from './ai/provider-factory';
+import type { EditorView } from '@codemirror/view';
+
+interface ObsidianEditorInternal {
+  editor?: { cm?: EditorView };
+  file?: TFile;
+}
+
+interface MenuItemWithSubmenu {
+  setSubmenu(): Menu;
+}
 
 export default class CodexPlugin extends Plugin {
   registry!: EntityRegistry;
@@ -37,7 +46,7 @@ export default class CodexPlugin extends Plugin {
   private teardownGlobalHover: (() => void) | null = null;
 
   async onload(): Promise<void> {
-    console.log('Codex plugin v0.2.0 loading');
+    console.debug('Codex plugin v0.2.0 loading');
     await this.loadSettings();
 
     this.registry = new EntityRegistry();
@@ -132,7 +141,7 @@ export default class CodexPlugin extends Plugin {
     this.app.workspace.onLayoutReady(async () => {
       await this.ensureTemplates();
       await this.vaultAdapter.fullIndex();
-      console.log(`Codex: Indexed ${this.registry.size} entities`);
+      console.debug(`Codex: Indexed ${this.registry.size} entities`);
       this.refreshWarningsView();
       this.refreshEditorDiagnostics();
     });
@@ -182,10 +191,10 @@ export default class CodexPlugin extends Plugin {
 
         menu.addItem((item) => {
           item.setTitle('Codex AI').setIcon('wand-2');
-          const submenu = (item as any).setSubmenu() as Menu;
+          const submenu = (item as unknown as MenuItemWithSubmenu).setSubmenu();
 
           const editor = _editor;
-          const cm = (view as any)?.editor?.cm as import('@codemirror/view').EditorView | undefined;
+          const cm = (view as unknown as ObsidianEditorInternal)?.editor?.cm;
           const selection = editor.getSelection();
           const hasSelection = selection && selection.trim().length > 0;
 
@@ -299,56 +308,44 @@ export default class CodexPlugin extends Plugin {
     return this.settings.entityTypes;
   }
 
-  private statblockStyleEl: HTMLStyleElement | null = null;
-
   applyStatblockWidth(): void {
-    this.removeStatblockStyle();
     const width = this.settings.statblockWidth ?? 600;
-    const el = document.createElement('style');
-    el.id = 'codex-statblock-width';
-    el.textContent = `.statblock .statblock-content > .column { width: ${width}px !important; }`;
-    document.head.appendChild(el);
-    this.statblockStyleEl = el;
+    document.body.style.setProperty('--codex-statblock-width', `${width}px`);
   }
 
   private removeStatblockStyle(): void {
-    this.statblockStyleEl?.remove();
-    this.statblockStyleEl = null;
+    document.body.style.removeProperty('--codex-statblock-width');
   }
 
-  private originalOpenLinkText: ((...args: any[]) => Promise<void>) | null = null;
+  private originalOpenLinkText: ((linktext: string, sourcePath: string, newLeaf?: boolean | string, openViewState?: Record<string, unknown>) => Promise<void>) | null = null;
 
   private installLinkNavigationOverride(): void {
     const workspace = this.app.workspace;
     this.originalOpenLinkText = workspace.openLinkText.bind(workspace);
 
-    const plugin = this;
-    workspace.openLinkText = async function (
+    workspace.openLinkText = async (
       linktext: string,
       sourcePath: string,
-      newLeaf?: any,
-      openViewState?: any,
-    ) {
-      // First check if Obsidian can resolve it natively
-      const nativeResolved = plugin.app.metadataCache.getFirstLinkpathDest(linktext, sourcePath);
+      newLeaf?: boolean | string,
+      openViewState?: Record<string, unknown>,
+    ) => {
+      const nativeResolved = this.app.metadataCache.getFirstLinkpathDest(linktext, sourcePath);
       if (nativeResolved) {
-        return plugin.originalOpenLinkText!(linktext, sourcePath, newLeaf, openViewState);
+        return this.originalOpenLinkText!(linktext, sourcePath, newLeaf, openViewState);
       }
 
-      // Try Codex resolver (handles aliases, name field, plurals)
-      const resolver = plugin.diagnosticEngine.getResolver();
+      const resolver = this.diagnosticEngine.getResolver();
       const resolved = resolver.resolve(linktext);
       if (resolved.length > 0) {
-        const targetFile = plugin.app.vault.getAbstractFileByPath(resolved[0].filePath);
+        const targetFile = this.app.vault.getAbstractFileByPath(resolved[0].filePath);
         if (targetFile instanceof TFile) {
-          const leaf = plugin.app.workspace.getLeaf(newLeaf ?? false);
+          const leaf = this.app.workspace.getLeaf(newLeaf ?? false);
           await leaf.openFile(targetFile, openViewState);
           return;
         }
       }
 
-      // Fall through to Obsidian's default (create new file prompt)
-      return plugin.originalOpenLinkText!(linktext, sourcePath, newLeaf, openViewState);
+      return this.originalOpenLinkText!(linktext, sourcePath, newLeaf, openViewState);
     };
   }
 
@@ -459,7 +456,7 @@ export default class CodexPlugin extends Plugin {
 
   refreshEditorDiagnostics(): void {
     this.app.workspace.getLeavesOfType('markdown').forEach((leaf) => {
-      const cm = (leaf.view as any)?.editor?.cm;
+      const cm = (leaf.view as unknown as ObsidianEditorInternal)?.editor?.cm;
       if (cm?.dispatch) {
         cm.dispatch({ effects: [refreshDiagnostics.of(null)] });
       }

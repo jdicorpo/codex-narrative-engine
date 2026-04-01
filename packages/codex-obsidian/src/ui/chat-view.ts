@@ -125,18 +125,18 @@ export class LoreChatView extends ItemView {
     this.scrollToBottom();
 
     try {
-      console.log('Codex Chat: assembling context...');
+      console.debug('Codex Chat: assembling context...');
       const context = this.plugin.contextAssembler.assemble(text);
-      console.log(`Codex Chat: context has ${context.entities.length} entities`);
+      console.debug(`Codex Chat: context has ${context.entities.length} entities`);
 
       const systemPrompt = buildSystemPrompt(context, {
         ruleSystem: this.plugin.settings.aiRuleSystem,
         campaignTone: this.plugin.settings.aiCampaignTone,
       });
-      console.log(`Codex Chat: system prompt is ${systemPrompt.length} chars`);
+      console.debug(`Codex Chat: system prompt is ${systemPrompt.length} chars`);
 
       const msgs = this.messages.filter(m => m.role !== 'system');
-      console.log(`Codex Chat: sending ${msgs.length} messages to provider...`);
+      console.debug(`Codex Chat: sending ${msgs.length} messages to provider...`);
 
       const response = await provider.chat({
         systemPrompt,
@@ -145,21 +145,22 @@ export class LoreChatView extends ItemView {
         temperature: this.plugin.settings.aiTemperature,
       });
 
-      console.log(`Codex Chat: got response (${response.content.length} chars)`);
+      console.debug(`Codex Chat: got response (${response.content.length} chars)`);
       thinkingEl.remove();
 
       this.messages.push({ role: 'assistant', content: response.content });
       this.renderMessages();
       this.scrollToBottom();
       await this.saveHistory();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Codex Chat: error', err);
       thinkingEl.remove();
-      new Notice(`Codex AI error: ${err?.message ?? 'Unknown error'}`);
+      const errMsg = err instanceof Error ? err.message : 'Unknown error';
+      new Notice(`Codex AI error: ${errMsg}`);
 
       this.messages.push({
         role: 'assistant',
-        content: `*Error: ${err?.message ?? 'Failed to get response'}*`,
+        content: `*Error: ${errMsg}*`,
       });
       this.renderMessages();
     } finally {

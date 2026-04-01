@@ -1,5 +1,5 @@
 import type { EntityRegistry } from '../indexer/entity-registry';
-import type { Entity } from '../types';
+import type { Entity, EntityType } from '../types';
 import type { EntitySummary, VaultContext } from './types';
 
 export interface ContextAssemblerOptions {
@@ -93,7 +93,7 @@ export class ContextAssembler {
       }
 
       const typeMatch = lower.replace('@', '');
-      const byType = this.registry.getByType(typeMatch as any);
+      const byType = this.registry.getByType(typeMatch as EntityType);
       if (byType.length > 0) {
         for (const e of byType) collected.set(e.filePath, e);
         continue;

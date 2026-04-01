@@ -92,10 +92,10 @@ export class AnthropicAdapter implements LLMProvider {
         model: response.json?.model ?? this.model,
         latencyMs,
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         success: false,
-        message: err?.message ?? 'Connection failed',
+        message: err instanceof Error ? err.message : 'Connection failed',
         latencyMs: Date.now() - start,
       };
     }
