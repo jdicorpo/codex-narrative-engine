@@ -107,8 +107,8 @@ const GENERATION_RULES = `RESPONSE RULES:
 
 function formatValue(v: unknown): string {
   if (typeof v === 'string') return v;
+  if (typeof v === 'number' || typeof v === 'boolean') return String(v);
   if (Array.isArray(v)) return v.join(', ');
   if (v === null || v === undefined) return '';
-  if (typeof v === 'object') return JSON.stringify(v);
-  return String(v);
+  return JSON.stringify(v);
 }

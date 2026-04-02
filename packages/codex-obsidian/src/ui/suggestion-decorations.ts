@@ -313,7 +313,7 @@ export function acceptAllSuggestions(plugin: CodexPlugin): void {
   for (const view of findEditorViewsWithSuggestions(plugin)) {
     view.dispatch({ effects: [clearSuggestions.of(null)] });
   }
-  new Notice('Codex: Suggestions accepted.');
+  new Notice('Codex: suggestions accepted.');
 }
 
 export function rejectAllSuggestions(plugin: CodexPlugin): void {
@@ -327,7 +327,7 @@ export function rejectAllSuggestions(plugin: CodexPlugin): void {
       selection: EditorSelection.cursor(0),
     });
   }
-  new Notice('Codex: Suggestions rejected — original content restored.');
+  new Notice('Codex: suggestions rejected — original content restored.');
 }
 
 // ---------------------------------------------------------------------------
@@ -343,7 +343,7 @@ export async function applySuggestedEdit(
   const oldContent = await plugin.app.vault.read(file);
 
   if (oldContent === newContent) {
-    new Notice('Codex: No changes to suggest.');
+    new Notice('Codex: no changes to suggest.');
     return;
   }
 

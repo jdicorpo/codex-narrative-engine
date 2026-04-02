@@ -86,25 +86,24 @@ export default class CodexPlugin extends Plugin {
     this.entitySuggest = new EntitySuggest(this);
     this.registerEditorSuggest(this.entitySuggest);
 
-    this.addRibbonIcon('scroll-text', 'Codex: Narrative Warnings', () => {
-      this.activateWarningsPanel();
+    this.addRibbonIcon('scroll-text', 'Codex: narrative warnings', () => {
+      void this.activateWarningsPanel();
     });
 
-    this.addRibbonIcon('message-square', 'Codex: Lore Chat', () => {
-      this.activateChatPanel();
+    this.addRibbonIcon('message-square', 'Codex: lore chat', () => {
+      void this.activateChatPanel();
     });
 
     // Commands
     this.addCommand({
       id: 'open-warnings-panel',
-      name: 'Open Narrative Warnings',
-      callback: () => this.activateWarningsPanel(),
+      name: 'Open narrative warnings',
+      callback: () => { void this.activateWarningsPanel(); },
     });
 
     this.addCommand({
       id: 'reindex-vault',
-      name: 'Re-index Vault',
-      hotkeys: [{ modifiers: ['Mod', 'Shift'], key: 'r' }],
+      name: 'Re-index vault',
       callback: async () => {
         this.registry.clear();
         await this.vaultAdapter.fullIndex();
@@ -116,9 +115,8 @@ export default class CodexPlugin extends Plugin {
 
     this.addCommand({
       id: 'open-lore-chat',
-      name: 'Open Lore Chat',
-      hotkeys: [{ modifiers: ['Mod', 'Shift'], key: 'l' }],
-      callback: () => this.activateChatPanel(),
+      name: 'Open lore chat',
+      callback: () => { void this.activateChatPanel(); },
     });
 
     registerRenameCommand(this);
@@ -127,13 +125,13 @@ export default class CodexPlugin extends Plugin {
 
     this.addCommand({
       id: 'accept-suggestions',
-      name: 'Accept AI Suggestions',
+      name: 'Accept AI suggestions',
       callback: () => acceptAllSuggestions(this),
     });
 
     this.addCommand({
       id: 'reject-suggestions',
-      name: 'Reject AI Suggestions',
+      name: 'Reject AI suggestions',
       callback: () => rejectAllSuggestions(this),
     });
 
@@ -170,20 +168,20 @@ export default class CodexPlugin extends Plugin {
 
           if (hunkId != null) {
             menu.addItem((item) =>
-              item.setTitle('Accept This Change').setIcon('check')
+              item.setTitle('Accept this change').setIcon('check')
                 .onClick(() => dismissSingleHunk(this, hunkId)),
             );
             menu.addItem((item) =>
-              item.setTitle('Reject This Change').setIcon('x')
+              item.setTitle('Reject this change').setIcon('x')
                 .onClick(() => rejectSingleHunk(this, hunkId)),
             );
           }
           menu.addItem((item) =>
-            item.setTitle('Accept All Changes').setIcon('check-check')
+            item.setTitle('Accept all changes').setIcon('check-check')
               .onClick(() => acceptAllSuggestions(this)),
           );
           menu.addItem((item) =>
-            item.setTitle('Reject All Changes').setIcon('x')
+            item.setTitle('Reject all changes').setIcon('x')
               .onClick(() => rejectAllSuggestions(this)),
           );
           menu.addSeparator();
@@ -202,8 +200,8 @@ export default class CodexPlugin extends Plugin {
             const from = cm.state.selection.main.from;
             const to = cm.state.selection.main.to;
             submenu.addItem((sub) =>
-              sub.setTitle('Revise Selection…').setIcon('pencil')
-                .onClick(() => reviseSelection(this, file, selection, from, to)),
+              sub.setTitle('Revise selection…').setIcon('pencil')
+                .onClick(() => { void reviseSelection(this, file, selection, from, to); }),
             );
           }
 
@@ -230,7 +228,7 @@ export default class CodexPlugin extends Plugin {
 
               submenu.addItem((sub) =>
                 sub.setTitle(`Generate "${entityName}"…`).setIcon('plus-circle')
-                  .onClick(() => generateEntityFromContext(this, entityName, surrounding)),
+                  .onClick(() => { void generateEntityFromContext(this, entityName, surrounding); }),
               );
             }
           }
@@ -240,17 +238,17 @@ export default class CodexPlugin extends Plugin {
           }
 
           submenu.addItem((sub) =>
-            sub.setTitle('Enhance Note').setIcon('sparkles')
-              .onClick(() => enhanceNote(this, file)),
+            sub.setTitle('Enhance note').setIcon('sparkles')
+              .onClick(() => { void enhanceNote(this, file); }),
           );
           submenu.addItem((sub) =>
-            sub.setTitle('Describe Scene (Read-Aloud)').setIcon('eye')
-              .onClick(() => describeScene(this, file)),
+            sub.setTitle('Describe scene (read-aloud)').setIcon('eye')
+              .onClick(() => { void describeScene(this, file); }),
           );
           submenu.addSeparator();
           submenu.addItem((sub) =>
-            sub.setTitle('Extract Entities').setIcon('scan-search')
-              .onClick(() => extractEntities(this, file)),
+            sub.setTitle('Extract entities').setIcon('scan-search')
+              .onClick(() => { void extractEntities(this, file); }),
           );
         });
 
@@ -258,7 +256,7 @@ export default class CodexPlugin extends Plugin {
         if (entity) {
           menu.addItem((item) =>
             item.setTitle(`Rename "${entity.name}"…`).setIcon('pencil-line')
-              .onClick(() => startRename(this, file)),
+              .onClick(() => { void startRename(this, file); }),
           );
         }
       }),
@@ -272,14 +270,14 @@ export default class CodexPlugin extends Plugin {
         const entity = this.registry.getByPath(abstractFile.path);
         if (entity) {
           menu.addItem((item) =>
-            item.setTitle(`Codex: Rename "${entity.name}"…`).setIcon('pencil-line')
-              .onClick(() => startRename(this, abstractFile)),
+            item.setTitle(`Codex: rename "${entity.name}"…`).setIcon('pencil-line')
+              .onClick(() => { void startRename(this, abstractFile); }),
           );
         }
 
         menu.addItem((item) =>
-          item.setTitle('Codex: Extract Entities').setIcon('scan-search')
-            .onClick(() => extractEntities(this, abstractFile)),
+          item.setTitle('Codex: extract entities').setIcon('scan-search')
+            .onClick(() => { void extractEntities(this, abstractFile); }),
         );
       }),
     );
@@ -420,28 +418,28 @@ export default class CodexPlugin extends Plugin {
   async activateChatPanel(): Promise<void> {
     const existing = this.app.workspace.getLeavesOfType(CHAT_VIEW_TYPE);
     if (existing.length > 0) {
-      this.app.workspace.revealLeaf(existing[0]);
+      await this.app.workspace.revealLeaf(existing[0]);
       return;
     }
 
     const leaf = this.app.workspace.getRightLeaf(false);
     if (leaf) {
       await leaf.setViewState({ type: CHAT_VIEW_TYPE, active: true });
-      this.app.workspace.revealLeaf(leaf);
+      await this.app.workspace.revealLeaf(leaf);
     }
   }
 
   async activateWarningsPanel(): Promise<void> {
     const existing = this.app.workspace.getLeavesOfType(WARNINGS_VIEW_TYPE);
     if (existing.length > 0) {
-      this.app.workspace.revealLeaf(existing[0]);
+      await this.app.workspace.revealLeaf(existing[0]);
       return;
     }
 
     const leaf = this.app.workspace.getRightLeaf(false);
     if (leaf) {
       await leaf.setViewState({ type: WARNINGS_VIEW_TYPE, active: true });
-      this.app.workspace.revealLeaf(leaf);
+      await this.app.workspace.revealLeaf(leaf);
     }
   }
 

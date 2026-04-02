@@ -144,40 +144,40 @@ async function loadSectionGuide(plugin: CodexPlugin, type: string): Promise<stri
 export function registerAICommands(plugin: CodexPlugin): void {
   plugin.addCommand({
     id: 'ai-enhance-note',
-    name: 'AI: Enhance Note',
+    name: 'AI: enhance note',
     checkCallback: (checking) => {
       const file = plugin.app.workspace.getActiveFile();
       if (!file || file.extension !== 'md') return false;
       if (checking) return true;
-      enhanceNote(plugin, file);
+      void enhanceNote(plugin, file);
     },
   });
 
   plugin.addCommand({
     id: 'ai-generate-entity',
-    name: 'AI: Generate Entity',
+    name: 'AI: generate entity',
     callback: () => generateEntity(plugin),
   });
 
   plugin.addCommand({
     id: 'ai-describe-scene',
-    name: 'AI: Describe Scene (Read-Aloud)',
+    name: 'AI: describe scene (read-aloud)',
     checkCallback: (checking) => {
       const file = plugin.app.workspace.getActiveFile();
       if (!file || file.extension !== 'md') return false;
       if (checking) return true;
-      describeScene(plugin, file);
+      void describeScene(plugin, file);
     },
   });
 
   plugin.addCommand({
     id: 'ai-extract-entities',
-    name: 'AI: Extract Entities from Note',
+    name: 'AI: extract entities from note',
     checkCallback: (checking) => {
       const file = plugin.app.workspace.getActiveFile();
       if (!file || file.extension !== 'md') return false;
       if (checking) return true;
-      extractEntities(plugin, file);
+      void extractEntities(plugin, file);
     },
   });
 }
@@ -252,14 +252,14 @@ ${content}`;
 
     const newContent = extractMarkdown(response.content);
     if (!newContent || newContent.trim().length < 20) {
-      new Notice('Codex: Enhancement produced empty or invalid output.');
+      new Notice('Codex: enhancement produced empty or invalid output.');
       return;
     }
 
     await applySuggestedEdit(plugin, file, newContent, 'Enhance Note');
-  } catch (err: any) {
+  } catch (err: unknown) {
     hideSpinner();
-    new Notice(`Codex: Error — ${err?.message ?? 'unknown'}`);
+    new Notice(`Codex: error — ${err instanceof Error ? err.message : 'unknown'}`);
   }
 }
 
@@ -290,7 +290,7 @@ class ReviseSelectionModal extends Modal {
 
   onOpen(): void {
     const { contentEl } = this;
-    contentEl.createEl('h3', { text: 'Revise Selection' });
+    contentEl.createEl('h3', { text: 'Revise selection' });
 
     const preview = this.selectedText.length > 120
       ? this.selectedText.slice(0, 120) + '…'
@@ -305,10 +305,10 @@ class ReviseSelectionModal extends Modal {
       .setDesc('Tell the AI how to revise this text.')
       .addTextArea(text => {
         text
-          .setPlaceholder('e.g. "make it more dramatic" or "add sensory details" or "rewrite as bullet points"')
+          .setPlaceholder('"make it more dramatic", "add sensory details", "rewrite as bullet points"')
           .onChange(value => { this.prompt = value; });
         text.inputEl.rows = 3;
-        text.inputEl.style.width = '100%';
+        text.inputEl.addClass('codex-modal-textarea');
         setTimeout(() => text.inputEl.focus(), 50);
       });
 
@@ -323,7 +323,7 @@ class ReviseSelectionModal extends Modal {
               return;
             }
             this.close();
-            this.doRevise();
+            void this.doRevise();
           }),
       )
       .addButton(btn =>
@@ -340,7 +340,7 @@ class ReviseSelectionModal extends Modal {
   private async doRevise(): Promise<void> {
     const provider = this.plugin.getProvider();
     if (!provider) {
-      new Notice('Codex: Configure an AI provider in settings first.');
+      new Notice('Codex: configure an AI provider in settings first.');
       return;
     }
 
@@ -385,7 +385,7 @@ ${this.selectedText}`,
       }
 
       if (!revised) {
-        new Notice('Codex: Revision produced empty output.');
+        new Notice('Codex: revision produced empty output.');
         return;
       }
 
@@ -394,7 +394,7 @@ ${this.selectedText}`,
       await applySuggestedEdit(this.plugin, this.file, newContent, 'Revise Selection');
     } catch (err: unknown) {
       hideSpinner();
-      new Notice(`Codex: Error — ${err instanceof Error ? err.message : 'unknown'}`);
+      new Notice(`Codex: error — ${err instanceof Error ? err.message : 'unknown'}`);
     }
   }
 }
@@ -410,7 +410,7 @@ interface GenerateEntityOptions {
   inferredType?: EntityType;
 }
 
-async function generateEntity(plugin: CodexPlugin, opts?: GenerateEntityOptions): Promise<void> {
+function generateEntity(plugin: CodexPlugin, opts?: GenerateEntityOptions): void {
   const provider = requireProvider(plugin);
   if (!provider) return;
 
@@ -488,7 +488,7 @@ class GenerateEntityModal extends Modal {
 
   onOpen(): void {
     const { contentEl } = this;
-    contentEl.createEl('h3', { text: 'Generate Entity' });
+    contentEl.createEl('h3', { text: 'Generate entity' });
 
     if (this.surroundingContext) {
       const preview = this.surroundingContext.length > 200
@@ -521,11 +521,11 @@ class GenerateEntityModal extends Modal {
       .setDesc('Optional hints for the AI')
       .addTextArea(text => {
         text
-          .setPlaceholder('e.g. "a paranoid dwarf merchant" or "a haunted swamp temple"')
+          .setPlaceholder('"a paranoid dwarf merchant", "a haunted swamp temple"')
           .setValue(this.guidance)
           .onChange(value => { this.guidance = value; });
         text.inputEl.rows = 3;
-        text.inputEl.style.width = '100%';
+        text.inputEl.addClass('codex-modal-textarea');
       });
 
     new Setting(contentEl)
@@ -535,7 +535,7 @@ class GenerateEntityModal extends Modal {
           .setCta()
           .onClick(() => {
             this.close();
-            this.doGenerate();
+            void this.doGenerate();
           }),
       );
   }
@@ -654,10 +654,10 @@ Return ONLY the complete markdown file content with frontmatter — no explanati
       const leaf = this.plugin.app.workspace.getLeaf(false);
       await leaf.openFile(newFile);
       hideSpinner();
-      new Notice(`Codex: Created ${safeName}`);
+      new Notice(`Codex: created ${safeName}`);
     } catch (err: unknown) {
       hideSpinner();
-      new Notice(`Codex: Error — ${err instanceof Error ? err.message : 'unknown'}`);
+      new Notice(`Codex: error — ${err instanceof Error ? err.message : 'unknown'}`);
     }
   }
 }
@@ -699,7 +699,7 @@ export async function describeScene(plugin: CodexPlugin, file: TFile): Promise<v
     await applySuggestedEdit(plugin, file, updatedContent, 'Describe Scene');
   } catch (err: unknown) {
     hideSpinner();
-    new Notice(`Codex: Error — ${err instanceof Error ? err.message : 'unknown'}`);
+    new Notice(`Codex: error — ${err instanceof Error ? err.message : 'unknown'}`);
   }
 }
 
@@ -762,7 +762,7 @@ ${content}`,
       const cleaned = response.content.replace(/```(?:json)?\s*\n?/g, '').replace(/```/g, '').trim();
       entities = parseEntityJSON(cleaned);
     } catch {
-      new Notice('Codex: Failed to parse entity list from AI response.');
+      new Notice('Codex: failed to parse entity list from AI response.');
       console.error('Codex: Extract entities parse error', response.content);
       return;
     }
@@ -773,14 +773,14 @@ ${content}`,
     }
 
     if (entities.length === 0) {
-      new Notice('Codex: No named entities found in this note.');
+      new Notice('Codex: no named entities found in this note.');
       return;
     }
 
     new ExtractedEntitiesModal(plugin, file, entities).open();
   } catch (err: unknown) {
     hideSpinner();
-    new Notice(`Codex: Error — ${err instanceof Error ? err.message : 'unknown'}`);
+    new Notice(`Codex: error — ${err instanceof Error ? err.message : 'unknown'}`);
   }
 }
 
@@ -820,7 +820,7 @@ class ExtractedEntitiesModal extends Modal {
     this.entities.forEach((entity, idx) => {
       const row = listEl.createDiv({ cls: 'codex-extract-row' });
 
-      const checkbox = row.createEl('input', { type: 'checkbox' }) as HTMLInputElement;
+      const checkbox = row.createEl('input', { type: 'checkbox' });
       checkbox.checked = this.selected.has(idx);
       checkbox.disabled = entity.alreadyExists;
       checkbox.addEventListener('change', () => {
@@ -846,7 +846,7 @@ class ExtractedEntitiesModal extends Modal {
 
     const actions = contentEl.createDiv({ cls: 'codex-extract-actions' });
 
-    const selectAllBtn = actions.createEl('button', { text: 'Select All New' });
+    const selectAllBtn = actions.createEl('button', { text: 'Select all new' });
     selectAllBtn.addEventListener('click', () => {
       this.entities.forEach((e, i) => {
         if (!e.alreadyExists) this.selected.add(i);
@@ -860,7 +860,7 @@ class ExtractedEntitiesModal extends Modal {
     });
     createBtn.addEventListener('click', () => {
       this.close();
-      this.createSelected();
+      void this.createSelected();
     });
   }
 
@@ -895,7 +895,7 @@ class ExtractedEntitiesModal extends Modal {
       await this.linkEntitiesInSource(createdNames);
     }
 
-    new Notice(`Codex: Created ${created} entity files and linked in source`);
+    new Notice(`Codex: created ${created} entity files and linked in source`);
 
     this.plugin.registry.clear();
     await this.plugin.vaultAdapter.fullIndex();
@@ -959,7 +959,7 @@ function buildEntityFrontmatter(entity: ExtractedEntity): string {
 function requireProvider(plugin: CodexPlugin) {
   const provider = plugin.getProvider();
   if (!provider) {
-    new Notice('Codex: Configure an AI provider in settings first.');
+    new Notice('Codex: configure an AI provider in settings first.');
     return null;
   }
   return provider;

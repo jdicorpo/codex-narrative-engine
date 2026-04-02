@@ -55,7 +55,7 @@ class CreateEntityModal extends Modal {
 
   onOpen(): void {
     const { contentEl } = this;
-    contentEl.createEl('h3', { text: 'Create Entity' });
+    contentEl.createEl('h3', { text: 'Create entity' });
 
     new Setting(contentEl)
       .setName('Entity name')
@@ -102,17 +102,17 @@ class CreateEntityModal extends Modal {
 export function registerCreateEntityCommand(plugin: CodexPlugin): void {
   plugin.addCommand({
     id: 'create-entity',
-    name: 'Create Entity',
+    name: 'Create entity',
     callback: () => {
-      new CreateEntityModal(plugin, '', async (type, name) => {
-        await createEntityFile(plugin, type, name);
+      new CreateEntityModal(plugin, '', (type, name) => {
+        void createEntityFile(plugin, type, name);
       }).open();
     },
   });
 
   plugin.addCommand({
     id: 'create-entity-from-link',
-    name: 'Create Entity from Dead Link',
+    name: 'Create entity from dead link',
     checkCallback: (checking: boolean) => {
       const file = plugin.app.workspace.getActiveFile();
       if (!file) return false;
@@ -126,8 +126,8 @@ export function registerCreateEntityCommand(plugin: CodexPlugin): void {
         if (cleaned) suggestedName = cleaned;
       }
 
-      new CreateEntityModal(plugin, suggestedName, async (type, name) => {
-        await createEntityFile(plugin, type, name);
+      new CreateEntityModal(plugin, suggestedName, (type, name) => {
+        void createEntityFile(plugin, type, name);
       }).open();
 
       return true;

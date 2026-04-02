@@ -15,7 +15,7 @@ class RenameModal extends Modal {
 
   onOpen(): void {
     const { contentEl } = this;
-    contentEl.createEl('h3', { text: 'Rename Entity' });
+    contentEl.createEl('h3', { text: 'Rename entity' });
     contentEl.createEl('p', {
       text: `Current name: ${this.oldName}`,
       cls: 'setting-item-description',
@@ -76,7 +76,7 @@ class ConfirmRenameModal extends Modal {
 
   onOpen(): void {
     const { contentEl } = this;
-    contentEl.createEl('h3', { text: 'Confirm Rename' });
+    contentEl.createEl('h3', { text: 'Confirm rename' });
     contentEl.createEl('p', {
       text: `Rename "${this.oldName}" → "${this.newName}"`,
     });
@@ -121,7 +121,7 @@ export function startRename(plugin: CodexPlugin, file: TFile): void {
   const entity = plugin.registry.getByPath(file.path);
   if (!entity) return;
 
-  new RenameModal(plugin.app, entity.name, async (newName) => {
+  new RenameModal(plugin.app, entity.name, (newName) => {
     const refs = plugin.registry.findReferences(entity.name);
     const affectedPaths = new Set<string>();
 
@@ -137,8 +137,8 @@ export function startRename(plugin: CodexPlugin, file: TFile): void {
       entity.name,
       newName,
       affectedFiles,
-      async () => {
-        await performRename(plugin, entity.filePath, entity.name, newName, affectedFiles);
+      () => {
+        void performRename(plugin, entity.filePath, entity.name, newName, affectedFiles);
       },
     ).open();
   }).open();
@@ -147,7 +147,7 @@ export function startRename(plugin: CodexPlugin, file: TFile): void {
 export function registerRenameCommand(plugin: CodexPlugin): void {
   plugin.addCommand({
     id: 'rename-entity',
-    name: 'Rename Entity',
+    name: 'Rename entity',
     checkCallback: (checking: boolean) => {
       const file = plugin.app.workspace.getActiveFile();
       if (!file) return false;

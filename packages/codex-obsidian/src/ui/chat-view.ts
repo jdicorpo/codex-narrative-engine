@@ -30,7 +30,7 @@ export class LoreChatView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'Lore Chat';
+    return 'Lore chat';
   }
 
   getIcon(): string {
@@ -66,7 +66,7 @@ export class LoreChatView extends ItemView {
     clearBtn.addEventListener('click', () => {
       this.messages = [];
       this.renderMessages();
-      this.saveHistory();
+      void this.saveHistory();
     });
 
     this.messagesEl = container.createDiv({ cls: 'codex-chat-messages' });
@@ -84,7 +84,7 @@ export class LoreChatView extends ItemView {
     this.inputEl.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        this.handleSend();
+        void this.handleSend();
       }
     });
 
@@ -98,7 +98,7 @@ export class LoreChatView extends ItemView {
       cls: 'codex-chat-send-btn',
       text: 'Send',
     });
-    this.sendBtn.addEventListener('click', () => this.handleSend());
+    this.sendBtn.addEventListener('click', () => { void this.handleSend(); });
   }
 
   private async handleSend(): Promise<void> {
@@ -107,7 +107,7 @@ export class LoreChatView extends ItemView {
 
     const provider = this.plugin.getProvider();
     if (!provider) {
-      new Notice('Codex: Configure an AI provider in settings first.');
+      new Notice('Codex: configure an AI provider in settings first.');
       return;
     }
 
@@ -212,7 +212,7 @@ export class LoreChatView extends ItemView {
       const contentEl = msgEl.createDiv({ cls: 'codex-chat-content' });
 
       if (msg.role === 'assistant') {
-        MarkdownRenderer.render(
+        void MarkdownRenderer.render(
           this.app,
           msg.content,
           contentEl,
@@ -240,7 +240,7 @@ export class LoreChatView extends ItemView {
         text: name ? `Save "${name}"` : 'Save as Note',
         attr: { 'aria-label': 'Create a new note from this response' },
       });
-      saveBtn.addEventListener('click', () => this.handleSaveAsNote(md));
+      saveBtn.addEventListener('click', () => { void this.handleSaveAsNote(md); });
     }
 
     if (hasNote && activeFile) {
@@ -249,7 +249,7 @@ export class LoreChatView extends ItemView {
         text: `Apply to ${activeFile.basename}`,
         attr: { 'aria-label': 'Apply changes to the currently open note' },
       });
-      applyBtn.addEventListener('click', () => this.handleApplyToNote(md, activeFile));
+      applyBtn.addEventListener('click', () => { void this.handleApplyToNote(md, activeFile); });
     }
 
     const copyBtn = bar.createEl('button', {
@@ -257,10 +257,11 @@ export class LoreChatView extends ItemView {
       text: 'Copy',
       attr: { 'aria-label': 'Copy response to clipboard' },
     });
-    copyBtn.addEventListener('click', async () => {
-      await navigator.clipboard.writeText(rawContent);
-      copyBtn.setText('Copied!');
-      setTimeout(() => copyBtn.setText('Copy'), 1500);
+    copyBtn.addEventListener('click', () => {
+      void navigator.clipboard.writeText(rawContent).then(() => {
+        copyBtn.setText('Copied!');
+        setTimeout(() => copyBtn.setText('Copy'), 1500);
+      });
     });
   }
 

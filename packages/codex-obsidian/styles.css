@@ -772,3 +772,7 @@
   justify-content: flex-end;
   gap: 8px;
 }
+
+.codex-modal-textarea {
+  width: 100%;
+}

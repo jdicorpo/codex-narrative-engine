@@ -18,7 +18,7 @@ export class WarningsView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'Narrative Warnings';
+    return 'Narrative warnings';
   }
 
   getIcon(): string {
@@ -89,7 +89,7 @@ export class WarningsView extends ItemView {
       });
 
       item.addEventListener('click', () => {
-        this.navigateTo(diag);
+        void this.navigateTo(diag);
       });
     }
   }
@@ -101,7 +101,7 @@ export class WarningsView extends ItemView {
     const leaf = this.app.workspace.getLeaf(false);
     await leaf.openFile(abstractFile);
 
-    const view = leaf.view as ItemView & { editor?: Editor };
+    const view = leaf.view as unknown as { editor?: Editor };
     if (view.editor) {
       const pos = { line: diag.line - 1, ch: diag.column };
       view.editor.setCursor(pos);

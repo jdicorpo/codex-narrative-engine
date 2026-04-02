@@ -140,7 +140,7 @@ export async function proposeEdit(
   const oldContent = await plugin.app.vault.read(file);
 
   if (oldContent === newContent) {
-    new Notice('Codex: No changes to suggest.');
+    new Notice('Codex: no changes to suggest.');
     return false;
   }
 
@@ -151,9 +151,9 @@ export async function proposeEdit(
 
   if (accepted) {
     await plugin.app.vault.modify(file, newContent);
-    new Notice(`Codex: Applied changes to ${file.basename}`);
+    new Notice(`Codex: applied changes to ${file.basename}`);
   } else {
-    new Notice('Codex: Changes rejected.');
+    new Notice('Codex: changes rejected.');
   }
 
   return accepted;
