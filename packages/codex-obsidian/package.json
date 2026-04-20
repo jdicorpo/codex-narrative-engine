@@ -1,6 +1,6 @@
 {
   "name": "@codex-ide/obsidian",
-  "version": "0.4.0",
+  "version": "0.4.0-beta.1",
   "description": "Obsidian plugin for narrative linting and entity intelligence",
   "main": "main.js",
   "scripts": {

@@ -1,7 +1,7 @@
 {
   "id": "codex-narrative-engine",
   "name": "Codex Narrative Engine",
-  "version": "0.2.0",
+  "version": "0.4.0-beta.1",
   "minAppVersion": "1.5.0",
   "description": "Narrative intelligence for TTRPG world-building — entity indexing, consistency linting, and dead-link detection for your campaign vault.",
   "author": "Djinnmind Labs LLC",
